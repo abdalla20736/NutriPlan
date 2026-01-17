@@ -1,4 +1,4 @@
-import api from "../api/mealApi.js";
+import mealApi from "../api/mealApi.js";
 import { MealCategory } from "../models/mealCategory.js";
 import { Recipe } from "../models/recipe.js";
 import { RegisterMultiEvents } from "../utils/utils.js";
@@ -29,7 +29,7 @@ async function StartUp() {
 }
 
 async function LoadAreas() {
-  const areas = await api.GetMealsAreas();
+  const areas = await mealApi.GetMealsAreas();
   const slicedAreas = areas.slice(0, 10);
   RenderAreas(slicedAreas);
 }
@@ -50,7 +50,7 @@ function RenderAreas(areasData) {
 }
 
 async function LoadCategories() {
-  const mealsCategories = await api.GetMealsCategories();
+  const mealsCategories = await mealApi.GetMealsCategories();
 
   let categories = [];
 
@@ -61,6 +61,12 @@ async function LoadCategories() {
   const slicedCategories = categories.slice(0, 12);
   RenderCategories(slicedCategories);
   categoriesButtons = categoriesGrid.querySelectorAll(".category-card");
+}
+
+function SetLoadingSpinner() {
+  recipesGrid.innerHTML = `<div class="flex items-center justify-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+  </div>`;
 }
 
 function RenderCategories(categories) {
@@ -100,17 +106,17 @@ async function LoadRecipeByFilter(filter, data) {
   let recipesData;
   switch (filter) {
     case "all":
-      recipesData = await api.GetMealsByTerm(data);
+      recipesData = await mealApi.GetMealsByTerm(data);
       break;
     case "category":
-      recipesData = await api.GetMealsByCategory(data);
+      recipesData = await mealApi.GetMealsByCategory(data);
       break;
     case "area":
       SetAreaButtonStyle(data);
       recipesData =
         data === "all"
-          ? await api.GetMealsByCategory("chicken")
-          : await api.GetMealsByArea(data);
+          ? await mealApi.GetMealsByCategory("chicken")
+          : await mealApi.GetMealsByArea(data);
       break;
   }
   recipes = [];
@@ -121,12 +127,6 @@ async function LoadRecipeByFilter(filter, data) {
   });
 
   RenderMealsUI(recipes, filter, data);
-}
-
-function SetLoadingSpinner() {
-  recipesGrid.innerHTML = `<div class="flex items-center justify-center py-12">
-    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-  </div>`;
 }
 
 function RenderMealsUI(recipes, filter, data, recipesContentMsg) {
@@ -215,14 +215,14 @@ function RenderRecipes(recipes) {
 async function SearchRecipesByFirstLetter(value) {
   value = value.toLowerCase();
   SetLoadingSpinner();
-  const recipesData = await api.GetMealsByFirstLetter(value);
+  const recipesData = await mealApi.GetMealsByFirstLetter(value);
 
   RenderMealsUI(recipesData, "", "", `"${value}"`);
 }
 
 async function SearchRecipesByName(value) {
   value = value.toLowerCase();
-  const recipesData = await api.GetMealsByTerm(value);
+  const recipesData = await mealApi.GetMealsByTerm(value);
 
   RenderMealsUI(recipesData, "", "", `"${value}"`);
 }

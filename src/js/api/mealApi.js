@@ -1,14 +1,14 @@
-const apiKey = "gzilERPSlsUCUvtZU7Bb8mgVjpdYPEBZgszDHb6h";
+import api from "./api.js";
 
 async function GetMealsAreas() {
-  const processedData = await ProcessApi(
+  const processedData = await api.ProcessApi(
     "https://nutriplan-api.vercel.app/api/meals/areas"
   );
 
   return processedData.results;
 }
 async function GetMealsCategories() {
-  const processedData = await ProcessApi(
+  const processedData = await api.ProcessApi(
     "https://nutriplan-api.vercel.app/api/meals/categories"
   );
 
@@ -16,7 +16,7 @@ async function GetMealsCategories() {
 }
 
 async function GetMealsByCategory(category) {
-  const processedData = await ProcessApi(
+  const processedData = await api.ProcessApi(
     `https://nutriplan-api.vercel.app/api/meals/filter?category=${category}&page=1&limit=25`
   );
 
@@ -24,14 +24,14 @@ async function GetMealsByCategory(category) {
 }
 
 async function GetMealsByArea(area) {
-  const processedData = await ProcessApi(
+  const processedData = await api.ProcessApi(
     `https://nutriplan-api.vercel.app/api/meals/filter?area=${area}&page=1&limit=25`
   );
 
   return await processedData.results;
 }
 async function GetMealById(id) {
-  const processedData = await ProcessApi(
+  const processedData = await api.ProcessApi(
     `https://nutriplan-api.vercel.app/api/meals/${id}`
   );
 
@@ -39,7 +39,7 @@ async function GetMealById(id) {
 }
 
 async function GetMealsByTerm(term) {
-  const processedData = await ProcessApi(
+  const processedData = await api.ProcessApi(
     `https://nutriplan-api.vercel.app/api/meals/search?q=${term}&page=1&limit=25`
   );
 
@@ -47,24 +47,14 @@ async function GetMealsByTerm(term) {
 }
 
 async function GetMealsByFirstLetter(firstLetter) {
-  const processedData = await ProcessApi(
+  const processedData = await api.ProcessApi(
     `https://nutriplan-api.vercel.app/api/meals/search?f=${firstLetter}&page=1&limit=25`
   );
 
   return processedData.results;
 }
 
-async function ProcessApi(url) {
-  try {
-    const res = await fetch(url);
-
-    return res.json();
-  } catch (error) {
-    console.log(`API Exception : ${error}`);
-  }
-}
-
-const api = {
+const mealApi = {
   GetMealsByCategory,
   GetMealsCategories,
   GetMealsAreas,
@@ -74,4 +64,4 @@ const api = {
   GetMealById,
 };
 
-export default api;
+export default mealApi;

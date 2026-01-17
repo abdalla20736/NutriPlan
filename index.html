@@ -393,6 +393,30 @@
           <div class="flex flex-wrap gap-3 mb-8">
             <button
               id="log-meal-btn"
+              class="flex items-center gap-2 px-6 py-3 bg-gray-300 text-gray-500 rounded-xl font-semibold cursor-not-allowed transition-all"
+              data-meal-id="52920"
+              disabled=""
+              title="Waiting for nutrition data..."
+            >
+              <i data-fa-i2svg=""
+                ><svg
+                  class="svg-inline--fa fa-spinner fa-spin"
+                  data-prefix="fas"
+                  data-icon="spinner"
+                  role="img"
+                  viewBox="0 0 512 512"
+                  aria-hidden="true"
+                  data-fa-i2svg=""
+                >
+                  <path
+                    fill="currentColor"
+                    d="M208 48a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm0 416a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zM48 208a48 48 0 1 1 0 96 48 48 0 1 1 0-96zm368 48a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zM75 369.1A48 48 0 1 1 142.9 437 48 48 0 1 1 75 369.1zM75 75A48 48 0 1 1 142.9 142.9 48 48 0 1 1 75 75zM437 369.1A48 48 0 1 1 369.1 437 48 48 0 1 1 437 369.1z"
+                  ></path></svg
+              ></i>
+              <span>Calculating...</span>
+            </button>
+            <button
+              id="log-meal-btn"
               class="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all"
               data-meal-id="52772"
             >
@@ -647,14 +671,17 @@
             <!-- Right Column - Nutrition -->
             <div class="space-y-6">
               <!-- Nutrition Facts -->
-              <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+              <div
+                id="loading-nutrition-container"
+                class="bg-white rounded-2xl shadow-lg p-6 sticky top-24"
+              >
                 <h2
                   class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"
                 >
                   <i class="fa-solid fa-chart-pie text-emerald-600"></i>
                   Nutrition Facts
                 </h2>
-                <div id="nutrition-facts-container">
+                <div id="nutrition-facts-container" class="hidden">
                   <p class="text-sm text-gray-500 mb-4">Per serving</p>
 
                   <div
@@ -834,14 +861,14 @@
           </div>
 
           <!-- Nutrition Grade Filter -->
-          <div class="flex items-center gap-4 mb-6">
+          <div id="nutri-score-grid" class="flex items-center gap-4 mb-6">
             <span class="text-sm font-medium text-gray-700"
               >Filter by Nutri-Score:</span
             >
             <div class="flex gap-2">
               <button
-                class="nutri-score-filter px-4 py-2 rounded-lg text-sm font-bold transition-all bg-emerald-600 text-white"
-                data-grade=""
+                class="nutri-score-filter px-4 py-2 rounded-lg text-sm font-bold transition-all bg-gray-100 hover:bg-gray-200 text-gray-700"
+                data-grade="all"
               >
                 All
               </button>
@@ -888,7 +915,8 @@
               id="product-categories"
             >
               <button
-                class="product-category-btn px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium whitespace-nowrap hover:bg-emerald-200 transition-all"
+                class="product-category-btn flex-shrink-0 px-5 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+                data-category="breakfast_cereals"
               >
                 <i class="fa-solid fa-cookie mr-1.5"></i>Snacks
               </button>
@@ -918,7 +946,6 @@
           <!-- Products Grid -->
           <div class="mb-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-xl font-bold text-gray-900">Search Results</h3>
               <p id="products-count" class="text-sm text-gray-600">
                 Search for products to see results
               </p>
@@ -927,80 +954,39 @@
             <div
               id="products-grid"
               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
-            >
-              <div
-                class="product-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group"
-                data-barcode="7613034626844"
-              >
+            ></div>
+            <div id="products-loading" class="hidden py-12">
+              <div class="flex items-center justify-center py-12">
                 <div
-                  class="relative h-40 bg-gray-100 flex items-center justify-center overflow-hidden"
+                  class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"
+                ></div>
+              </div>
+            </div>
+            <div id="products-empty" class="py-12">
+              <div class="text-center">
+                <div
+                  class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
                 >
-                  <img
-                    class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                    src="https://images.openfoodfacts.org/images/products/316/893/015/9742/front_fr.54.400.jpg"
-                    alt="Product Name"
-                    loading="lazy"
-                  />
-
-                  <!-- Nutri-Score Badge -->
-                  <div
-                    class="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded uppercase"
-                  >
-                    Nutri-Score A
-                  </div>
-
-                  <!-- NOVA Badge -->
-                  <div
-                    class="absolute top-2 right-2 bg-lime-500 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center"
-                    title="NOVA 2"
-                  >
-                    2
-                  </div>
-                </div>
-
-                <div class="p-4">
-                  <p
-                    class="text-xs text-emerald-600 font-semibold mb-1 truncate"
-                  >
-                    Brand Name
-                  </p>
-                  <h3
-                    class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors"
-                  >
-                    Product Name
-                  </h3>
-
-                  <div
-                    class="flex items-center gap-3 text-xs text-gray-500 mb-3"
-                  >
-                    <span
-                      ><i class="fa-solid fa-weight-scale mr-1"></i>250g</span
+                  <i class="text-3xl text-gray-400" data-fa-i2svg=""
+                    ><svg
+                      class="svg-inline--fa fa-box-open"
+                      data-prefix="fas"
+                      data-icon="box-open"
+                      role="img"
+                      viewBox="0 0 640 512"
+                      aria-hidden="true"
+                      data-fa-i2svg=""
                     >
-                    <span
-                      ><i class="fa-solid fa-fire mr-1"></i>350 kcal/100g</span
-                    >
-                  </div>
-
-                  <!-- Mini Nutrition -->
-                  <div class="grid grid-cols-4 gap-1 text-center">
-                    <div class="bg-emerald-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-emerald-700">8.5g</p>
-                      <p class="text-[10px] text-gray-500">Protein</p>
-                    </div>
-                    <div class="bg-blue-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-blue-700">45.2g</p>
-                      <p class="text-[10px] text-gray-500">Carbs</p>
-                    </div>
-                    <div class="bg-purple-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-purple-700">12.3g</p>
-                      <p class="text-[10px] text-gray-500">Fat</p>
-                    </div>
-                    <div class="bg-orange-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-orange-700">18.5g</p>
-                      <p class="text-[10px] text-gray-500">Sugar</p>
-                    </div>
-                  </div>
+                      <path
+                        fill="currentColor"
+                        d="M560.3 237.2c10.4 11.8 28.3 14.4 41.8 5.5 14.7-9.8 18.7-29.7 8.9-44.4l-48-72c-2.8-4.2-6.6-7.7-11.1-10.2L351.4 4.7c-19.3-10.7-42.8-10.7-62.2 0L88.8 116c-5.4 3-9.7 7.4-12.6 12.8L27.7 218.7c-12.6 23.4-3.8 52.5 19.6 65.1l33 17.7 0 53.3c0 23 12.4 44.3 32.4 55.7l176 99.7c19.6 11.1 43.5 11.1 63.1 0l176-99.7c20.1-11.4 32.4-32.6 32.4-55.7l0-117.5zm-240-9.8L170.2 144 320.3 60.6 470.4 144 320.3 227.4zm-41.5 50.2l-21.3 46.2-165.8-88.8 25.4-47.2 161.7 89.8z"
+                      ></path></svg
+                  ></i>
                 </div>
+                <p class="text-gray-500 text-lg mb-2">No products to display</p>
+                <p class="text-gray-400 text-sm">
+                  Search for a product or browse by category
+                </p>
               </div>
             </div>
           </div>

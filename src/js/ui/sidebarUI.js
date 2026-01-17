@@ -1,5 +1,5 @@
 import { RegisterMultiEvents } from "../utils/utils.js";
-import { SetHeaderInfo } from "../utils/header.js";
+import { SetHeaderInfo } from "../utils/sharedComponents.js";
 
 const sideBar = document.getElementById("sidebar");
 const tabs = sideBar.querySelectorAll("nav ul li a");

@@ -8,6 +8,7 @@
 import sideBarUI from "./ui/sidebarUI.js";
 import api from "./api/mealApi.js";
 import meals from "./ui/mealsUI.js";
+import products from "./ui/productscannerUI.js";
 
 const loading = document.getElementById("app-loading-overlay");
 
