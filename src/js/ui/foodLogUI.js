@@ -1,6 +1,10 @@
 import storage from "../storage/storage.js";
 
-import { ShowOnDeletedToast, ToggleAppLoading } from "./components.js";
+import {
+  ShowOnDeletedToast,
+  ToggleAppLoading,
+  SetLinkState,
+} from "./components.js";
 
 const foodLogDate = document.getElementById("foodlog-date");
 const foodLogGrid = document.getElementById("logged-items-grid");
@@ -137,6 +141,7 @@ function NavigateToProducts(e) {
     ToggleAppLoading(false);
   }, 800);
 }
+
 function NavigateToMeals(e) {
   e.preventDefault();
 
@@ -144,6 +149,7 @@ function NavigateToMeals(e) {
     .getElementById("sidebar")
     .querySelectorAll("nav ul li a");
   tabs[0].click();
+  SetLinkState(e.target);
 }
 
 function RenderFoodLog(loggedFood) {
@@ -161,13 +167,13 @@ function RenderFoodLog(loggedFood) {
                     <p class="text-gray-500 font-medium mb-2">No food logged today</p>
                     <p class="text-gray-400 text-sm mb-4">Start tracking your nutrition by logging meals or scanning products</p>
                     <div class="flex justify-center gap-3">
-                        <a href="#" id="browse-recipes-btn" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all"     data-section-id="meal-recipes"
-                        data-target="home">
+                        <a href="#" id="browse-recipes-btn" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all"    
+                        data-target="foodlog#meals">
                     
                         <i data-fa-i2svg=""><svg class="svg-inline--fa fa-plus" data-prefix="fas" data-icon="plus" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"></path></svg></i>
                             Browse Recipes
                         </a>
-                        <a href="" id="scan-product-btn"  class="nav-link inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"  data-section-id="products-section"  data-target="products">    
+                        <a href="#" id="scan-product-btn"  class="nav-link inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all">    
                         
                             <i data-fa-i2svg=""><svg class="svg-inline--fa fa-barcode" data-prefix="fas" data-icon="barcode" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M32 32C14.3 32 0 46.3 0 64L0 448c0 17.7 14.3 32 32 32s32-14.3 32-32L64 64c0-17.7-14.3-32-32-32zm88 0c-13.3 0-24 10.7-24 24l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24zm72 32l0 384c0 17.7 14.3 32 32 32s32-14.3 32-32l0-384c0-17.7-14.3-32-32-32s-32 14.3-32 32zm208-8l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24zm-96 0l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24z"></path></svg></i>
                             Scan Product

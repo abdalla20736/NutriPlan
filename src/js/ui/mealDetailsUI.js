@@ -1,12 +1,13 @@
 import mealApi from "../api/mealApi.js";
 import nutritionApi from "../api/nutritionApi.js";
-import { SetHeaderInfo } from "../utils/sharedComponents.js";
 import { MealDetails } from "../models/mealDetails.js";
 import { LoggedItem } from "../models/loggedItem.js";
 import {
+  SetHeaderInfo,
   CalculatePercentage,
   standardNutriation,
-} from "../utils/sharedComponents.js";
+  SetLinkState,
+} from "./components.js";
 import foodLog from "./foodLogUI.js";
 
 const searchFiltersSection = document.getElementById("search-filters-section");
@@ -20,26 +21,18 @@ const backToMealsBtn = document.getElementById("back-to-meals-btn");
 let nutritionData;
 let meal;
 
-function SetLinkState(product) {
-  const target = product.dataset.target;
-
-  if (!target) return;
-
-  history.pushState(null, null, `#${target}`);
-}
-
-window.GetMealDetails = async function (product, id) {
+window.GetMealDetails = async function (meal, id) {
   SetHeaderInfo(
     "Recipe Details",
     "View full recipe information and nutrition facts",
   );
   const mealData = await mealApi.GetMealById(id);
 
+  SetLinkState(meal);
+
   if (mealData != null) {
     meal = new MealDetails(mealData);
   }
-
-  SetLinkState(product);
 
   RenderMealDetailsWithNutrition(meal);
 
@@ -442,8 +435,6 @@ window.OnLogRecipe = function () {
   const modal = document.getElementById("log-meal-modal");
   meal.type = "Recipe";
   meal.serving = document.getElementById("meal-servings").value;
-  console.log(nutritionData.perServing.calories);
-  console.log(meal.serving);
 
   const loggedRecipe = new LoggedItem(meal);
 
@@ -545,7 +536,7 @@ function SetLogButtonLoading(isLoading) {
     : (text.textContent = "Log This Meal");
   const icon = logThisMeal.querySelector("i");
   const svg = icon.querySelector("svg");
-  console.log(icon);
+
   isLoading
     ? icon.classList.replace("fa-clipboard-list", "fa-spinner")
     : svg.classList.replace("fa-spinner", "fa-clipboard-list");

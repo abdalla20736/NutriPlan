@@ -5,10 +5,10 @@ import staticData from "../utils/staticData.js";
 import foodLog from "./foodLogUI.js";
 import { RegisterMultiEvents } from "../utils/utils.js";
 import {
+  ShowOnErrorToast,
   standardNutriation,
   CalculatePercentage,
-} from "../utils/sharedComponents.js";
-import { ShowOnErrorToast } from "./components.js";
+} from "./components.js";
 
 const productCategories = document.getElementById("product-categories");
 const productsGrid = document.getElementById("products-grid");
@@ -164,10 +164,10 @@ function RenderScoreBadge(badge) {
 function RenderNovaBadge(badge) {
   if (!badge) return "";
 
-  let color = "bg-lime-500";
+  let color = "";
   switch (badge) {
     case 1:
-      color = "bg-lime-500";
+      color = "bg-green-500";
       break;
     case 2:
       color = "bg-lime-500";
@@ -342,15 +342,19 @@ function RenderModalProduct(product) {
             <!-- Header -->
             <div class="flex items-start gap-6 mb-6">
                 <div class="w-32 h-32 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
-                    
-                        <img src="${product.image}" alt="${
-                          product.name
-                        }" class="w-full h-full object-contain">
+
+                ${
+                  product.image
+                    ? `             <img src="${product.image}" alt="${
+                        product.name
+                      }" class="w-full h-full object-contain">`
+                    : `<i class="text-4xl text-gray-400" data-fa-i2svg=""><svg class="svg-inline--fa fa-box" data-prefix="fas" data-icon="box" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M369.4 128l-34.3-48-222.1 0-34.3 48 290.7 0zM0 148.5c0-13.3 4.2-26.3 11.9-37.2L60.9 42.8C72.9 26 92.3 16 112.9 16l222.1 0c20.7 0 40.1 10 52.1 26.8l48.9 68.5c7.8 10.9 11.9 23.9 11.9 37.2L448 416c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 148.5z"></path></svg></i>`
+                }
                     
                 </div>
                 <div class="flex-1">
                     <p class="text-sm text-emerald-600 font-semibold mb-1">${
-                      product.brand
+                      product.brand || "Unknown Brand"
                     }</p>
                     <h2 class="text-2xl font-bold text-gray-900 mb-2">${
                       product.name

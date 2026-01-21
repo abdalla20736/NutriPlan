@@ -269,7 +269,7 @@ function RegisterEvents() {
   });
   searchInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      console.log(e.target.value);
+
       SearchRecipesByFirstLetter(e.target.value);
     }
   });
