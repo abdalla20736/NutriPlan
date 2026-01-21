@@ -152,7 +152,7 @@ function RenderRecipes(recipes) {
       recipesContent += `            <div
               onclick="GetMealDetails(this,'${recipe.id}')"
               class="recipe-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group"
-              data-target="meal/${recipe.name.replace(" ", "-").toLowerCase()}"
+              data-target="meal/${recipe.name.replaceAll(" ", "-").toLowerCase()}"
               data-area="${recipe.area.toLowerCase()}"
               data-meal-id="${recipe.id}"
             >
@@ -269,7 +269,6 @@ function RegisterEvents() {
   });
   searchInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-
       SearchRecipesByFirstLetter(e.target.value);
     }
   });
