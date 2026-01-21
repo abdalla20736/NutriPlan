@@ -24,7 +24,6 @@ async function GetMealsByArea(area) {
     `${BASE_URL}/filter?area=${area}&page=1&limit=all`,
   );
 
-
   return await processedData.results;
 }
 async function GetMealById(id) {

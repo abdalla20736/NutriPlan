@@ -21,16 +21,14 @@ async function GetProductsBySearch(query, isLimited = true) {
 }
 
 async function GetProductsByBarCode(barcode) {
-  const processedData = await api.ProcessApi(
-    `${BASE_URL}/products/barcode/${barcode}`,
-  );
+  const processedData = await api.ProcessApi(`${BASE_URL}/barcode/${barcode}`);
 
   return await processedData.result;
 }
 
 async function GetProductsByCategories(category) {
   const processedData = await api.ProcessApi(
-    `${BASE_URL}/products/category/${category}?page=1&limit=24`,
+    `${BASE_URL}/category/${category}?page=1&limit=24`,
   );
 
   return await processedData;
