@@ -8,6 +8,7 @@ import {
   ShowOnErrorToast,
   standardNutriation,
   CalculatePercentage,
+  ShowOnSuccessToast,
 } from "./components.js";
 
 const productCategories = document.getElementById("product-categories");
