@@ -28,6 +28,6 @@ function RegisterEvents() {
   window.addEventListener("load", () => {
     setTimeout(() => {
       ToggleAppLoading(false);
-    }, 2000);
+    }, 1000);
   });
 }
