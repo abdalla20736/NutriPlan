@@ -16,7 +16,6 @@ const mealCategoriesSection = document.getElementById(
   "meal-categories-section",
 );
 const allRecipesSection = document.getElementById("all-recipes-section");
-const backToMealsBtn = document.getElementById("back-to-meals-btn");
 
 let nutritionData;
 let meal;
@@ -42,6 +41,7 @@ window.GetMealDetails = async function (mealInstance, id) {
 async function RenderMealDetailsWithNutrition(meal) {
   let { name, ingredients } = meal;
   RenderMealDetails(meal);
+  RegisterEventMeal();
   SetLoadingData(true);
   nutritionData = await nutritionApi.AnalyzeRecipeNutrition(name, ingredients);
   SetLoadingData(false);
@@ -551,10 +551,11 @@ function SetLoadingData(isLoading) {
   SetAnalyzeLoading(isLoading);
 }
 
-function RegisterEvents() {
+function RegisterEventMeal() {
+  const backToMealsBtn = document.getElementById("back-to-meals-btn");
   backToMealsBtn.addEventListener("click", () => ToggleMealDetails(true));
 }
 
-const mealDetailsUI = { RegisterEvents };
+const mealDetailsUI = {};
 
 export default mealDetailsUI;

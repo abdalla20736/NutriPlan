@@ -22,7 +22,6 @@ async function StartUp() {
   await LoadAreas();
   await LoadCategories();
   RegisterEvents();
-  mealDetailsUI.RegisterEvents();
 }
 
 async function LoadAreas() {
