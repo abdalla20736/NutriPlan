@@ -553,7 +553,10 @@ function SetLoadingData(isLoading) {
 
 function RegisterEventMeal() {
   const backToMealsBtn = document.getElementById("back-to-meals-btn");
-  backToMealsBtn.addEventListener("click", () => ToggleMealDetails(true));
+  backToMealsBtn.addEventListener("click", (e) => {
+    ToggleMealDetails(true);
+    history.pushState(null, null, "#home");
+  });
 }
 
 const mealDetailsUI = {};
