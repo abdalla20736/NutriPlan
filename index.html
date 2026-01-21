@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -96,7 +96,8 @@
               <a
                 class="nav-link flex items-center gap-3 px-3 py-2.5 bg-emerald-50 text-emerald-700 rounded-lg transition-all active"
                 data-section-id="meal-recipes"
-                href="#"
+                data-target="home"
+                href="/home"
               >
                 <i class="fa-solid fa-utensils w-5"></i>
                 <span class="font-semibold">Meals & Recipes</span>
@@ -106,7 +107,7 @@
               <a
                 class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
                 data-section-id="products-section"
-                href="#"
+                data-target="products"
               >
                 <i class="fa-solid fa-barcode w-5"></i>
                 <span class="font-medium">Product Scanner</span>
@@ -116,7 +117,7 @@
               <a
                 class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 rounded-lg transition-all"
                 data-section-id="foodlog-section"
-                href="#"
+                data-target="foodlog"
               >
                 <i class="fa-solid fa-clipboard-list w-5"></i>
                 <span class="font-medium">Food Log</span>
@@ -330,7 +331,7 @@
       <section
         id="meal-details"
         class="px-8 py-8 bg-gray-50 hidden"
-        data-section="meal-recipes"
+        data-section="meal-details"
       >
         <div class="max-w-7xl mx-auto">
           <!-- Back Button -->
@@ -382,7 +383,7 @@
                   </span>
                   <span class="flex items-center gap-2">
                     <i class="fa-solid fa-fire"></i>
-                    <span id="hero-calories">485 cal/serving</span>
+                    <span id="hero-calories">Calculating...</span>
                   </span>
                 </div>
               </div>
@@ -398,21 +399,7 @@
               disabled=""
               title="Waiting for nutrition data..."
             >
-              <i data-fa-i2svg=""
-                ><svg
-                  class="svg-inline--fa fa-spinner fa-spin"
-                  data-prefix="fas"
-                  data-icon="spinner"
-                  role="img"
-                  viewBox="0 0 512 512"
-                  aria-hidden="true"
-                  data-fa-i2svg=""
-                >
-                  <path
-                    fill="currentColor"
-                    d="M208 48a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm0 416a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zM48 208a48 48 0 1 1 0 96 48 48 0 1 1 0-96zm368 48a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zM75 369.1A48 48 0 1 1 142.9 437 48 48 0 1 1 75 369.1zM75 75A48 48 0 1 1 142.9 142.9 48 48 0 1 1 75 75zM437 369.1A48 48 0 1 1 369.1 437 48 48 0 1 1 437 369.1z"
-                  ></path></svg
-              ></i>
+              <i class="fa-solid fa-clipboard-list"></i>
               <span>Calculating...</span>
             </button>
             <button
@@ -660,7 +647,14 @@
                     src="https://www.youtube.com/embed/4aZr5hZXP_s"
                     class="absolute inset-0 w-full h-full"
                     frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allow="
+                      accelerometer;
+                      autoplay;
+                      clipboard-write;
+                      encrypted-media;
+                      gyroscope;
+                      picture-in-picture;
+                    "
                     allowfullscreen
                   >
                   </iframe>
@@ -671,10 +665,7 @@
             <!-- Right Column - Nutrition -->
             <div class="space-y-6">
               <!-- Nutrition Facts -->
-              <div
-                id="loading-nutrition-container"
-                class="bg-white rounded-2xl shadow-lg p-6 sticky top-24"
-              >
+              <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
                 <h2
                   class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"
                 >
@@ -1037,60 +1028,93 @@
             <div
               class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
             >
-              <!-- Calories Progress -->
-              <div class="bg-emerald-50 rounded-xl p-4">
+              <div class="bg-gray-50 rounded-xl p-4">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-semibold text-gray-700"
+                  <span class="text-sm font-medium text-gray-700"
                     >Calories</span
                   >
-                  <span class="text-sm text-gray-500">0 / 2000 kcal</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                  <div
-                    class="bg-emerald-500 h-2.5 rounded-full"
-                    style="width: 0%"
-                  ></div>
-                </div>
-              </div>
-              <!-- Protein Progress -->
-              <div class="bg-blue-50 rounded-xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-semibold text-gray-700"
-                    >Protein</span
+                  <span id="calories-percent" class="text-xs text-emerald-600"
+                    >0%</span
                   >
-                  <span class="text-sm text-gray-500">0 / 50 g</span>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                   <div
-                    class="bg-blue-500 h-2.5 rounded-full"
+                    id="calories-bar"
+                    class="h-2.5 rounded-full bg-emerald-500"
                     style="width: 0%"
                   ></div>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span id="calories-value" class="font-bold text-emerald-600"
+                    >0 kcal</span
+                  >
+                  <span class="text-gray-400">/ 2000 kcal</span>
                 </div>
               </div>
-              <!-- Carbs Progress -->
-              <div class="bg-amber-50 rounded-xl p-4">
+
+              <div class="bg-gray-50 rounded-xl p-4">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-semibold text-gray-700">Carbs</span>
-                  <span class="text-sm text-gray-500">0 / 250 g</span>
+                  <span class="text-sm font-medium text-gray-700">Protein</span>
+                  <span id="protein-percent" class="text-xs text-blue-600"
+                    >0%</span
+                  >
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                   <div
-                    class="bg-amber-500 h-2.5 rounded-full"
+                    id="protein-bar"
+                    class="h-2.5 rounded-full bg-blue-500"
                     style="width: 0%"
                   ></div>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span id="protein-value" class="font-bold text-blue-600"
+                    >0 g</span
+                  >
+                  <span class="text-gray-400">/ 50 g</span>
                 </div>
               </div>
-              <!-- Fat Progress -->
-              <div class="bg-purple-50 rounded-xl p-4">
+
+              <div class="bg-gray-50 rounded-xl p-4">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-semibold text-gray-700">Fat</span>
-                  <span class="text-sm text-gray-500">0 / 65 g</span>
+                  <span class="text-sm font-medium text-gray-700">Carbs</span>
+                  <span id="carbs-percent" class="text-xs text-amber-600"
+                    >0%</span
+                  >
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
                   <div
-                    class="bg-purple-500 h-2.5 rounded-full"
+                    id="carbs-bar"
+                    class="h-2.5 rounded-full bg-amber-500"
                     style="width: 0%"
                   ></div>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span id="carbs-value" class="font-bold text-amber-600"
+                    >0 g</span
+                  >
+                  <span class="text-gray-400">/ 250 g</span>
+                </div>
+              </div>
+
+              <div class="bg-gray-50 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm font-medium text-gray-700">Fat</span>
+                  <span id="fat-percent" class="text-xs text-purple-600"
+                    >0%</span
+                  >
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                  <div
+                    id="fat-bar"
+                    class="h-2.5 rounded-full bg-purple-500"
+                    style="width: 0%"
+                  ></div>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span id="fat-value" class="font-bold text-purple-600"
+                    >0 g</span
+                  >
+                  <span class="text-gray-400">/ 65 g</span>
                 </div>
               </div>
             </div>
@@ -1098,28 +1122,106 @@
             <!-- Logged Items -->
             <div class="border-t border-gray-200 pt-4">
               <div class="flex items-center justify-between mb-3">
-                <h4 class="text-sm font-semibold text-gray-700">
+                <h4
+                  id="logged-items-count"
+                  class="text-sm font-semibold text-gray-700"
+                >
                   Logged Items (0)
                 </h4>
                 <button
                   id="clear-foodlog"
-                  class="text-red-500 hover:text-red-600 text-sm font-medium"
-                  style="display: none"
+                  class="text-red-500 hover:text-red-600 text-sm font-medium hidden"
                 >
-                  <i class="fa-solid fa-trash mr-1"></i>Clear All
+                  <i class="mr-1" data-fa-i2svg=""
+                    ><svg
+                      class="svg-inline--fa fa-trash"
+                      data-prefix="fas"
+                      data-icon="trash"
+                      role="img"
+                      viewBox="0 0 448 512"
+                      aria-hidden="true"
+                      data-fa-i2svg=""
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M136.7 5.9L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-8.7-26.1C306.9-7.2 294.7-16 280.9-16L167.1-16c-13.8 0-26 8.8-30.4 21.9zM416 144L32 144 53.1 467.1C54.7 492.4 75.7 512 101 512L347 512c25.3 0 46.3-19.6 47.9-44.9L416 144z"
+                      ></path></svg></i
+                  >Clear All
                 </button>
               </div>
 
-              <div id="logged-items-list" class="space-y-2">
-                <!-- Empty State -->
-                <div class="text-center py-8 text-gray-500">
-                  <i
-                    class="fa-solid fa-utensils text-4xl mb-3 text-gray-300"
+              <div id="logged-items-grid" class="text-center">
+                <div
+                  class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                >
+                  <i class="text-3xl text-gray-300" data-fa-i2svg=""
+                    ><svg
+                      class="svg-inline--fa fa-utensils"
+                      data-prefix="fas"
+                      data-icon="utensils"
+                      role="img"
+                      viewBox="0 0 512 512"
+                      aria-hidden="true"
+                      data-fa-i2svg=""
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M63.9 14.4C63.1 6.2 56.2 0 48 0s-15.1 6.2-16 14.3L17.9 149.7c-1.3 6-1.9 12.1-1.9 18.2 0 45.9 35.1 83.6 80 87.7L96 480c0 17.7 14.3 32 32 32s32-14.3 32-32l0-224.4c44.9-4.1 80-41.8 80-87.7 0-6.1-.6-12.2-1.9-18.2L223.9 14.3C223.1 6.2 216.2 0 208 0s-15.1 6.2-15.9 14.4L178.5 149.9c-.6 5.7-5.4 10.1-11.1 10.1-5.8 0-10.6-4.4-11.2-10.2L143.9 14.6C143.2 6.3 136.3 0 128 0s-15.2 6.3-15.9 14.6L99.8 149.8c-.5 5.8-5.4 10.2-11.2 10.2-5.8 0-10.6-4.4-11.1-10.1L63.9 14.4zM448 0C432 0 320 32 320 176l0 112c0 35.3 28.7 64 64 64l32 0 0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-448c0-17.7-14.3-32-32-32z"
+                      ></path></svg
                   ></i>
-                  <p class="font-medium">No meals logged today</p>
-                  <p class="text-sm">
-                    Add meals from the Meals page or scan products
-                  </p>
+                </div>
+                <p class="text-gray-500 font-medium mb-2">
+                  No food logged today
+                </p>
+                <p class="text-gray-400 text-sm mb-4">
+                  Start tracking your nutrition by logging meals or scanning
+                  products
+                </p>
+                <div class="flex justify-center gap-3">
+                  <a
+                    id="browse-recipe-btn"
+                    target="#meals"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all"
+                  >
+                    <i data-fa-i2svg=""
+                      ><svg
+                        class="svg-inline--fa fa-plus"
+                        data-prefix="fas"
+                        data-icon="plus"
+                        role="img"
+                        viewBox="0 0 448 512"
+                        aria-hidden="true"
+                        data-fa-i2svg=""
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M256 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 160-160 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l160 0 0 160c0 17.7 14.3 32 32 32s32-14.3 32-32l0-160 160 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-160 0 0-160z"
+                        ></path></svg
+                    ></i>
+                    Browse Recipes
+                  </a>
+                  <a
+                    id="scan-product-btn"
+                    target="/products"
+                    class="nav-link inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                  >
+                    <i data-fa-i2svg=""
+                      ><svg
+                        class="svg-inline--fa fa-barcode"
+                        data-prefix="fas"
+                        data-icon="barcode"
+                        role="img"
+                        viewBox="0 0 448 512"
+                        aria-hidden="true"
+                        data-fa-i2svg=""
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M32 32C14.3 32 0 46.3 0 64L0 448c0 17.7 14.3 32 32 32s32-14.3 32-32L64 64c0-17.7-14.3-32-32-32zm88 0c-13.3 0-24 10.7-24 24l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24zm72 32l0 384c0 17.7 14.3 32 32 32s32-14.3 32-32l0-384c0-17.7-14.3-32-32-32s-32 14.3-32 32zm208-8l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24zm-96 0l0 400c0 13.3 10.7 24 24 24s24-10.7 24-24l0-400c0-13.3-10.7-24-24-24s-24 10.7-24 24z"
+                        ></path></svg
+                    ></i>
+                    Scan Product
+                  </a>
                 </div>
               </div>
             </div>
@@ -1128,71 +1230,197 @@
           <!-- Weekly Overview -->
           <div class="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-200">
             <h3 class="text-lg font-bold text-gray-900 mb-4">
-              <i class="fa-solid fa-calendar-week text-indigo-500 mr-2"></i>
+              <i class="mr-2 text-indigo-500" data-fa-i2svg=""
+                ><svg
+                  class="svg-inline--fa fa-calendar-week"
+                  data-prefix="fas"
+                  data-icon="calendar-week"
+                  role="img"
+                  viewBox="0 0 448 512"
+                  aria-hidden="true"
+                  data-fa-i2svg=""
+                >
+                  <path
+                    fill="currentColor"
+                    d="M128 0c17.7 0 32 14.3 32 32l0 32 128 0 0-32c0-17.7 14.3-32 32-32s32 14.3 32 32l0 32 32 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 128C0 92.7 28.7 64 64 64l32 0 0-32c0-17.7 14.3-32 32-32zm0 256c-17.7 0-32 14.3-32 32l0 64c0 17.7 14.3 32 32 32l192 0c17.7 0 32-14.3 32-32l0-64c0-17.7-14.3-32-32-32l-192 0z"
+                  ></path></svg
+              ></i>
               Weekly Overview
             </h3>
 
-            <div
-              id="weekly-chart"
-              class="h-64 bg-gray-50 rounded-xl flex items-center justify-center"
-            >
-              <!-- Chart placeholder - JS will populate with Plotly -->
-              <div class="text-center text-gray-400">
-                <i class="fa-solid fa-chart-line text-4xl mb-2"></i>
-                <p>Weekly nutrition chart will appear here</p>
+            <div id="weekly-overview-grid" class="grid grid-cols-7 gap-2">
+              <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">Sun</p>
+                <p class="text-sm font-medium text-gray-900">11</p>
+                <div class="mt-2 text-gray-300">
+                  <p class="text-lg font-bold">0</p>
+                  <p class="text-xs">kcal</p>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">Mon</p>
+                <p class="text-sm font-medium text-gray-900">12</p>
+                <div class="mt-2 text-gray-300">
+                  <p class="text-lg font-bold">0</p>
+                  <p class="text-xs">kcal</p>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">Tue</p>
+                <p class="text-sm font-medium text-gray-900">13</p>
+                <div class="mt-2 text-gray-300">
+                  <p class="text-lg font-bold">0</p>
+                  <p class="text-xs">kcal</p>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">Wed</p>
+                <p class="text-sm font-medium text-gray-900">14</p>
+                <div class="mt-2 text-gray-300">
+                  <p class="text-lg font-bold">0</p>
+                  <p class="text-xs">kcal</p>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">Thu</p>
+                <p class="text-sm font-medium text-gray-900">15</p>
+                <div class="mt-2 text-gray-300">
+                  <p class="text-lg font-bold">0</p>
+                  <p class="text-xs">kcal</p>
+                </div>
+              </div>
+
+              <div class="text-center">
+                <p class="text-xs text-gray-500 mb-1">Fri</p>
+                <p class="text-sm font-medium text-gray-900">16</p>
+                <div class="mt-2 text-gray-300">
+                  <p class="text-lg font-bold">0</p>
+                  <p class="text-xs">kcal</p>
+                </div>
+              </div>
+
+              <div class="text-center bg-indigo-100 rounded-xl">
+                <p class="text-xs text-gray-500 mb-1">Sat</p>
+                <p class="text-sm font-medium text-gray-900">17</p>
+                <div class="mt-2 text-gray-300">
+                  <p class="text-lg font-bold">0</p>
+                  <p class="text-xs">kcal</p>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Quick Actions -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button
-              class="quick-log-btn bg-white rounded-xl p-4 border-2 border-gray-200 hover:border-emerald-500 transition-all text-left flex items-center gap-4"
-            >
-              <div
-                class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center"
-              >
-                <i class="fa-solid fa-plus text-emerald-600 text-xl"></i>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl p-4 border-2 border-gray-200">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center"
+                >
+                  <i class="text-emerald-600 text-xl" data-fa-i2svg=""
+                    ><svg
+                      class="svg-inline--fa fa-chart-line"
+                      data-prefix="fas"
+                      data-icon="chart-line"
+                      role="img"
+                      viewBox="0 0 512 512"
+                      aria-hidden="true"
+                      data-fa-i2svg=""
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64L0 400c0 44.2 35.8 80 80 80l400 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L80 416c-8.8 0-16-7.2-16-16L64 64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7 262.6 153.4c-12.5-12.5-32.8-12.5-45.3 0l-96 96c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l73.4-73.4 57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"
+                      ></path></svg
+                  ></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Weekly Average</p>
+                  <p
+                    id="weekly-average-counter"
+                    class="text-xl font-bold text-gray-900"
+                  >
+                    769 kcal
+                  </p>
+                </div>
               </div>
-              <div>
-                <p class="font-semibold text-gray-900">Log a Meal</p>
-                <p class="text-sm text-gray-500">Add from recipes</p>
-              </div>
-            </button>
+            </div>
 
-            <button
-              class="quick-log-btn bg-white rounded-xl p-4 border-2 border-gray-200 hover:border-teal-500 transition-all text-left flex items-center gap-4"
-            >
-              <div
-                class="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center"
-              >
-                <i class="fa-solid fa-barcode text-teal-600 text-xl"></i>
+            <div class="bg-white rounded-xl p-4 border-2 border-gray-200">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center"
+                >
+                  <i class="text-blue-600 text-xl" data-fa-i2svg=""
+                    ><svg
+                      class="svg-inline--fa fa-utensils"
+                      data-prefix="fas"
+                      data-icon="utensils"
+                      role="img"
+                      viewBox="0 0 512 512"
+                      aria-hidden="true"
+                      data-fa-i2svg=""
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M63.9 14.4C63.1 6.2 56.2 0 48 0s-15.1 6.2-16 14.3L17.9 149.7c-1.3 6-1.9 12.1-1.9 18.2 0 45.9 35.1 83.6 80 87.7L96 480c0 17.7 14.3 32 32 32s32-14.3 32-32l0-224.4c44.9-4.1 80-41.8 80-87.7 0-6.1-.6-12.2-1.9-18.2L223.9 14.3C223.1 6.2 216.2 0 208 0s-15.1 6.2-15.9 14.4L178.5 149.9c-.6 5.7-5.4 10.1-11.1 10.1-5.8 0-10.6-4.4-11.2-10.2L143.9 14.6C143.2 6.3 136.3 0 128 0s-15.2 6.3-15.9 14.6L99.8 149.8c-.5 5.8-5.4 10.2-11.2 10.2-5.8 0-10.6-4.4-11.1-10.1L63.9 14.4zM448 0C432 0 320 32 320 176l0 112c0 35.3 28.7 64 64 64l32 0 0 128c0 17.7 14.3 32 32 32s32-14.3 32-32l0-448c0-17.7-14.3-32-32-32z"
+                      ></path></svg
+                  ></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Total Items This Week</p>
+                  <p
+                    id="weekly-total-items"
+                    class="text-xl font-bold text-gray-900"
+                  >
+                    3 items
+                  </p>
+                </div>
               </div>
-              <div>
-                <p class="font-semibold text-gray-900">Scan Product</p>
-                <p class="text-sm text-gray-500">Use barcode scanner</p>
-              </div>
-            </button>
+            </div>
 
-            <button
-              class="quick-log-btn bg-white rounded-xl p-4 border-2 border-gray-200 hover:border-purple-500 transition-all text-left flex items-center gap-4"
-            >
-              <div
-                class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center"
-              >
-                <i class="fa-solid fa-pencil text-purple-600 text-xl"></i>
+            <div class="bg-white rounded-xl p-4 border-2 border-gray-200">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center"
+                >
+                  <i class="text-purple-600 text-xl" data-fa-i2svg=""
+                    ><svg
+                      class="svg-inline--fa fa-bullseye"
+                      data-prefix="fas"
+                      data-icon="bullseye"
+                      role="img"
+                      viewBox="0 0 512 512"
+                      aria-hidden="true"
+                      data-fa-i2svg=""
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M448 256a192 192 0 1 0 -384 0 192 192 0 1 0 384 0zM0 256a256 256 0 1 1 512 0 256 256 0 1 1 -512 0zm256 80a80 80 0 1 0 0-160 80 80 0 1 0 0 160zm0-224a144 144 0 1 1 0 288 144 144 0 1 1 0-288zM224 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"
+                      ></path></svg
+                  ></i>
+                </div>
+                <div>
+                  <p class="text-sm text-gray-500">Days On Goal</p>
+                  <p
+                    id="weekly-goal-counter"
+                    class="text-xl font-bold text-gray-900"
+                  >
+                    0 / 7
+                  </p>
+                </div>
               </div>
-              <div>
-                <p class="font-semibold text-gray-900">Custom Entry</p>
-                <p class="text-sm text-gray-500">Add custom food</p>
-              </div>
-            </button>
+            </div>
           </div>
         </div>
       </section>
     </div>
 
     <!-- Main JavaScript Entry Point -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script type="module" src="./src/js/main.js"></script>
   </body>
 </html>

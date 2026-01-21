@@ -1,8 +1,14 @@
 import productApi from "../api/productApi.js";
-import { LoggedProduct } from "../models/loggedProduct.js";
+import { LoggedItem } from "../models/loggedItem.js";
 import { ProductCategory } from "../models/productCategory.js";
 import staticData from "../utils/staticData.js";
+import foodLog from "./foodlogUI.js";
 import { RegisterMultiEvents } from "../utils/utils.js";
+import {
+  standardNutriation,
+  CalculatePercentage,
+} from "../utils/sharedComponents.js";
+import { ShowOnErrorToast } from "./components.js";
 
 const productCategories = document.getElementById("product-categories");
 const productsGrid = document.getElementById("products-grid");
@@ -15,8 +21,6 @@ const productBarcodeBtn = document.getElementById("lookup-barcode-btn");
 const loadingSpinner = document.getElementById("products-loading");
 const gradeButtons = document.querySelectorAll("button[data-grade]");
 
-StartUp();
-
 window.currentProducts = [];
 
 async function StartUp() {
@@ -26,7 +30,7 @@ async function StartUp() {
 async function LoadCategories() {
   const productCategories = await productApi.GetProductsCategories();
   const categories = productCategories.map(
-    (category) => new ProductCategory(category)
+    (category) => new ProductCategory(category),
   );
 
   const slicedCategories = categories.slice(0, 10);
@@ -53,7 +57,7 @@ async function LoadProductsByGrade(clickedGrade, query) {
 
   let grade = clickedGrade.dataset.grade;
 
-  ToggleProductsLoadingSpinner();
+  ToggleProductsLoadingSpinner(true);
 
   try {
     const productsData = await productApi.GetProductsBySearch(query, false);
@@ -65,52 +69,59 @@ async function LoadProductsByGrade(clickedGrade, query) {
     }
 
     const gradedProducts = results.filter(
-      (product) => product.nutritionGrade === grade
+      (product) => product.nutritionGrade === grade,
     );
+
+    if (gradedProducts.length === 0) {
+      productsGrid.innerHTML = "";
+      emptyState.classList.remove("hidden");
+      productsCount.innerHTML = "Error searching products";
+      ShowOnErrorToast("Failed to search products. Please try again.");
+      return;
+    }
 
     RenderProducts(gradedProducts, gradedProducts.length, `for "${query}"`);
   } finally {
-    ToggleProductsLoadingSpinner();
+    ToggleProductsLoadingSpinner(false);
   }
 }
 
-function ToggleProductsLoadingSpinner() {
-  if (!emptyState.classList.contains("hidden")) {
+function ToggleProductsLoadingSpinner(isLoading) {
+  if (!emptyState.classList.contains("hidden") && isLoading) {
     emptyState.classList.add("hidden");
   }
-  loadingSpinner.classList.toggle("hidden");
-  productsGrid.classList.toggle("hidden");
+  loadingSpinner.classList.toggle("hidden", !isLoading);
+  productsGrid.classList.toggle("hidden", isLoading);
 }
 
 window.LoadProductsByCategory = async function (categoryName) {
-  ToggleProductsLoadingSpinner();
-  const productCategories = await productApi.GetProductsByCategories(
-    categoryName
-  );
-  ToggleProductsLoadingSpinner();
+  ToggleProductsLoadingSpinner(true);
+  const productCategories =
+    await productApi.GetProductsByCategories(categoryName);
+  ToggleProductsLoadingSpinner(false);
   RenderProducts(
     productCategories.results,
     productCategories.pagination.total,
-    `in ${categoryName}`
+    `in ${categoryName}`,
   );
 };
 
 async function SearchProductsByName(value) {
-  ToggleProductsLoadingSpinner();
+  ToggleProductsLoadingSpinner(true);
   const productsData = await productApi.GetProductsBySearch(value);
-  ToggleProductsLoadingSpinner();
+  ToggleProductsLoadingSpinner(false);
   RenderProducts(
     productsData.results,
     productsData.pagination.total,
-    `for "${value}"`
+    `for "${value}"`,
   );
 }
 
 async function SearchProductsByBarCode(value) {
   value = value.toLowerCase();
-  ToggleProductsLoadingSpinner();
+  ToggleProductsLoadingSpinner(true);
   const productData = await productApi.GetProductsByBarCode(value);
-  ToggleProductsLoadingSpinner();
+  ToggleProductsLoadingSpinner(false);
   RenderSingleProduct(productData, value);
 }
 
@@ -132,7 +143,7 @@ function RenderScoreBadge(badge) {
       color = "bg-orange-500";
       break;
     case "e":
-      color = "bg-orange-500";
+      color = "bg-red-500";
       break;
     case "unknown":
       color = "bg-gray-400";
@@ -191,82 +202,7 @@ function RenderProducts(products, total, searchQuery = "") {
   window.currentProducts = products;
 
   products.forEach((product) => {
-    productsContent += `<div
-                class="product-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group"
-                data-barcode="${product.barcode}"
-              >
-                <div
-                  class="relative h-40 bg-gray-100 flex items-center justify-center overflow-hidden"
-                >
-                  <img
-                    class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                    src="${product.image}"
-                    alt="${product.name}"
-                    loading="lazy"
-                  />
-
-                  <!-- Nutri-Score Badge -->
-                  ${RenderScoreBadge(product.nutritionGrade)}
-
-                  <!-- NOVA Badge -->
-                 ${RenderNovaBadge(product.novaGroup)}
-            
-                </div>
-
-                <div class="p-4">
-                  <p
-                    class="text-xs text-emerald-600 font-semibold mb-1 truncate"
-                  >
-                    ${product.brand}
-                  </p>
-                  <h3
-                    class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors"
-                  >
-                    ${product.name}
-                  </h3>
-
-                  <div
-                    class="flex items-center gap-3 text-xs text-gray-500 mb-3"
-                  >
-                    <span
-                      ><i class="fa-solid fa-weight-scale mr-1"></i>250g</span
-                    >
-                    <span
-                      ><i class="fa-solid fa-fire mr-1"></i>${
-                        product.nutrients.calories
-                      } kcal/100g</span
-                    >
-                  </div>
-
-                  <!-- Mini Nutrition -->
-                  <div class="grid grid-cols-4 gap-1 text-center">
-                    <div class="bg-emerald-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-emerald-700">${product.nutrients.protein.toFixed(
-                        1
-                      )}g</p>
-                      <p class="text-[10px] text-gray-500">Protein</p>
-                    </div>
-                    <div class="bg-blue-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-blue-700">${product.nutrients.carbs.toFixed(
-                        1
-                      )}g</p>
-                      <p class="text-[10px] text-gray-500">Carbs</p>
-                    </div>
-                    <div class="bg-purple-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-purple-700">${product.nutrients.fat.toFixed(
-                        1
-                      )}g</p>
-                      <p class="text-[10px] text-gray-500">Fat</p>
-                    </div>
-                    <div class="bg-orange-50 rounded p-1.5">
-                      <p class="text-xs font-bold text-orange-700">${product.nutrients.sugar.toFixed(
-                        1
-                      )}g</p>
-                      <p class="text-[10px] text-gray-500">Sugar</p>
-                    </div>
-                  </div>
-                </div>
-              </div>`;
+    productsContent += RenderProduct(product);
   });
 
   productsGrid.innerHTML = productsContent;
@@ -275,12 +211,8 @@ function RenderProducts(products, total, searchQuery = "") {
 export function RenderSingleProduct(product, barcode = "") {
   productsGrid.innerHTML = "";
   if (!product) {
-    let toast = document.createElement("div");
-    toast.innerHTML = `<div class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 toast-notification">Product not found in database</div>`;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.remove();
-    }, 5000);
+    ShowOnErrorToast("Product not found in database");
+
     emptyState.classList.remove("hidden");
     productsCount.innerHTML = `No product found with barcode: ${barcode} `;
     return;
@@ -288,7 +220,16 @@ export function RenderSingleProduct(product, barcode = "") {
   emptyState.classList.add("hidden");
   productsCount.innerHTML = `Found product: ${product.name} `;
 
-  productsGrid.innerHTML = `
+  productsGrid.innerHTML = RenderProduct(product);
+
+  window.currentProducts.push(product);
+  if (barcode) {
+    OpenProduct(barcode);
+  }
+}
+
+function RenderProduct(product) {
+  return `
   
                       <div
                 class="product-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group"
@@ -297,12 +238,18 @@ export function RenderSingleProduct(product, barcode = "") {
                 <div
                   class="relative h-40 bg-gray-100 flex items-center justify-center overflow-hidden"
                 >
-                  <img
+                   ${
+                     product.image
+                       ? ` <img
                     class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                     src="${product.image}"
                     alt="${product.name}"
                     loading="lazy"
-                  />
+                  />`
+                       : ` <div class="w-16 h-16 bg-gray-200 rounded-xl flex items-center justify-center">
+                        <i class="text-2xl text-gray-400" data-fa-i2svg=""><svg class="svg-inline--fa fa-box" data-prefix="fas" data-icon="box" role="img" viewBox="0 0 448 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M369.4 128l-34.3-48-222.1 0-34.3 48 290.7 0zM0 148.5c0-13.3 4.2-26.3 11.9-37.2L60.9 42.8C72.9 26 92.3 16 112.9 16l222.1 0c20.7 0 40.1 10 52.1 26.8l48.9 68.5c7.8 10.9 11.9 23.9 11.9 37.2L448 416c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 148.5z"></path></svg></i>
+                    </div>`
+                   }
 
                   <!-- Nutri-Score Badge -->
                    ${RenderScoreBadge(product.nutritionGrade)}
@@ -318,7 +265,7 @@ export function RenderSingleProduct(product, barcode = "") {
                   <p
                     class="text-xs text-emerald-600 font-semibold mb-1 truncate"
                   >
-                    ${product.brand}
+                    ${product.brand || "Unknown Brand"}
                   </p>
                   <h3
                     class="font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors"
@@ -343,25 +290,25 @@ export function RenderSingleProduct(product, barcode = "") {
                   <div class="grid grid-cols-4 gap-1 text-center">
                     <div class="bg-emerald-50 rounded p-1.5">
                       <p class="text-xs font-bold text-emerald-700">${product.nutrients.protein.toFixed(
-                        1
+                        1,
                       )}g</p>
                       <p class="text-[10px] text-gray-500">Protein</p>
                     </div>
                     <div class="bg-blue-50 rounded p-1.5">
                       <p class="text-xs font-bold text-blue-700">${product.nutrients.carbs.toFixed(
-                        1
+                        1,
                       )} g</p>
                       <p class="text-[10px] text-gray-500">Carbs</p>
                     </div>
                     <div class="bg-purple-50 rounded p-1.5">
                       <p class="text-xs font-bold text-purple-700">${product.nutrients.fat.toFixed(
-                        1
+                        1,
                       )} g</p>
                       <p class="text-[10px] text-gray-500">Fat</p>
                     </div>
                     <div class="bg-orange-50 rounded p-1.5">
                       <p class="text-xs font-bold text-orange-700">${product.nutrients.sugar.toFixed(
-                        1
+                        1,
                       )} g</p>
                       <p class="text-[10px] text-gray-500">Sugar</p>
                     </div>
@@ -369,32 +316,18 @@ export function RenderSingleProduct(product, barcode = "") {
                 </div>
               </div>
   `;
-
-  window.currentProducts.push(product);
-  if (barcode) {
-    OpenProduct(barcode);
-  }
-}
-
-function CalculatePercentage(value, ref) {
-  const percentage = (value / ref) * 100;
-  return Math.min(Math.round(percentage), 100);
 }
 
 function RenderModalProduct(product) {
   const { protein, carbs, fat, sugar, fiber } = product.nutrients;
 
-  const referenceValues = {
-    protein: 50,
-    carbs: 100,
-    fat: 65,
-    sugar: 50,
-  };
-
-  const proteinPercent = CalculatePercentage(protein, referenceValues.protein);
-  const carbsPercent = CalculatePercentage(carbs, referenceValues.carbs);
-  const fatPercent = CalculatePercentage(fat, referenceValues.fat);
-  const sugarPercent = CalculatePercentage(sugar, referenceValues.sugar);
+  const proteinPercent = CalculatePercentage(
+    protein,
+    standardNutriation.protein,
+  );
+  const carbsPercent = CalculatePercentage(carbs, standardNutriation.carbs);
+  const fatPercent = CalculatePercentage(fat, standardNutriation.fat);
+  const sugarPercent = CalculatePercentage(sugar, standardNutriation.sugar);
 
   const oldModal = document.getElementById("product-detail-modal");
   if (oldModal) oldModal.remove();
@@ -411,8 +344,8 @@ function RenderModalProduct(product) {
                 <div class="w-32 h-32 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
                     
                         <img src="${product.image}" alt="${
-    product.name
-  }" class="w-full h-full object-contain">
+                          product.name
+                        }" class="w-full h-full object-contain">
                     
                 </div>
                 <div class="flex-1">
@@ -503,7 +436,7 @@ ${
                             <div class="bg-emerald-500 h-2 rounded-full" style="width: ${proteinPercent}%"></div>
                         </div>
                         <p class="text-lg font-bold text-emerald-600">${protein.toFixed(
-                          1
+                          1,
                         )}g</p>
                         <p class="text-xs text-gray-500">Protein</p>
                     </div>
@@ -512,7 +445,7 @@ ${
                             <div class="bg-blue-500 h-2 rounded-full" style="width: ${carbsPercent}%"></div>
                         </div>
                         <p class="text-lg font-bold text-blue-600">${carbs.toFixed(
-                          1
+                          1,
                         )}g</p>
                         <p class="text-xs text-gray-500">Carbs</p>
                     </div>
@@ -521,7 +454,7 @@ ${
                               <div class="bg-purple-500 h-2 rounded-full" style="width: ${fatPercent}%"></div>
                           </div>
                         <p class="text-lg font-bold text-purple-600">${fat.toFixed(
-                          1
+                          1,
                         )}g</p>
                         <p class="text-xs text-gray-500">Fat</p>
                     </div>
@@ -530,7 +463,7 @@ ${
                             <div class="bg-orange-500 h-2 rounded-full" style="width: ${sugarPercent}%"></div>
                         </div>
                         <p class="text-lg font-bold text-orange-600">${sugar.toFixed(
-                          1
+                          1,
                         )}g</p>
                         <p class="text-xs text-gray-500">Sugar</p>
                     </div>
@@ -543,7 +476,7 @@ ${
                     </div>
                     <div class="text-center">
                         <p class="text-sm font-semibold text-gray-900">${fiber.toFixed(
-                          1
+                          1,
                         )}g</p>
                         <p class="text-xs text-gray-500">Fiber</p>
                     </div>
@@ -595,23 +528,16 @@ function OpenProduct(barcode) {
 
 function RegisterModalEvents(modal, product) {
   modal.querySelector(".add-product-to-log").addEventListener("click", () => {
-    const loggedProduct = new LoggedProduct(product);
+    product.type = "Product";
+    const loggedProduct = new LoggedItem(product);
 
-    // const storedProducts = getFoodLog();
-    //storedProducts.push(loggedProduct);
-    //  setFoodLog(storedProducts);
+    const storedProducts = foodLog.GetLoggedItem();
+    storedProducts.push(loggedProduct);
+    foodLog.SetLoggedItem(storedProducts);
 
-    const successToast = document.createElement("div");
-    successToast.className =
-      "fixed bottom-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 toast-notification";
-    successToast.innerHTML = `
-        ${product.name} logged to your daily intake! 📝
-    `;
+    foodLog.UpdateWeeklyDataOnAddingItem(loggedProduct);
 
-    document.body.appendChild(successToast);
-    setTimeout(() => {
-      successToast.remove();
-    }, 2000);
+    ShowOnSuccessToast(`${product.name} logged to your daily intake! 📝`);
     modal.remove();
   });
   modal.querySelector(".close-product-modal").addEventListener("click", () => {
@@ -638,7 +564,7 @@ function RegisterEvents() {
     }
   });
   productSearchBtn.addEventListener("click", () =>
-    SearchProductsByName(productSearchInput.value.toLowerCase())
+    SearchProductsByName(productSearchInput.value.toLowerCase()),
   );
 
   productBarcodeInput.addEventListener("keydown", (e) => {
@@ -647,7 +573,7 @@ function RegisterEvents() {
     }
   });
   productBarcodeBtn.addEventListener("click", () =>
-    SearchProductsByBarCode(productBarcodeInput.value.toLowerCase())
+    SearchProductsByBarCode(productBarcodeInput.value.toLowerCase()),
   );
 
   productsGrid.addEventListener("click", (e) => {
@@ -658,7 +584,10 @@ function RegisterEvents() {
     OpenProduct(barcode);
   });
   RegisterMultiEvents(gradeButtons, "click", (e) =>
-    LoadProductsByGrade(e.currentTarget, productSearchInput.value.toLowerCase())
+    LoadProductsByGrade(
+      e.currentTarget,
+      productSearchInput.value.toLowerCase(),
+    ),
   );
 
   document.querySelectorAll(".nutri-score-filter").forEach((nutri) => {
@@ -672,5 +601,7 @@ function RegisterEvents() {
   });
 }
 
-const products = {};
+const products = {
+  StartUp,
+};
 export default products;

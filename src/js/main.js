@@ -6,25 +6,31 @@
  */
 
 import sideBarUI from "./ui/sidebarUI.js";
-import api from "./api/mealApi.js";
 import meals from "./ui/mealsUI.js";
 import products from "./ui/productscannerUI.js";
+import foodLog from "./ui/foodlogUI.js";
+import { ToggleAppLoading } from "./ui/components.js";
 
-const loading = document.getElementById("app-loading-overlay");
-
-window.addEventListener("load", () => {
-  loading.style.opacity = "0";
-  loading.style.transition = "opacity 0.5s ease-out";
-  loading.addEventListener("transitionend", () => {
-    loading.classList.toggle("hidden");
-  });
-});
+const navLinks = document.querySelectorAll("a");
 
 StartUp();
 
 function StartUp() {
+  RegisterEvents();
   sideBarUI.RegisterEvents();
+  meals.StartUp();
+  products.StartUp();
   meals.LoadRecipeByFilter("all", "chicken");
+  foodLog.StartUp();
 }
 
-function ToggleLoading() {}
+function RegisterEvents() {
+  document.addEventListener("DOMContentLoaded", () => {
+    if (window.location.pathname === "/products") {
+      history.replaceState(null, "", "/");
+    }
+  });
+  window.addEventListener("load", () => {
+    ToggleAppLoading(false);
+  });
+}

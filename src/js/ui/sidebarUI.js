@@ -3,7 +3,6 @@ import { SetHeaderInfo } from "../utils/sharedComponents.js";
 
 const sideBar = document.getElementById("sidebar");
 const tabs = sideBar.querySelectorAll("nav ul li a");
-const sections = document.querySelectorAll("section");
 const mobileToggle = document.getElementById("header-menu-btn");
 const closeMobileBtn = document.getElementById("sidebar-close-btn");
 
@@ -23,22 +22,32 @@ function ActiveTab(tab) {
 
 function SetActiveSection(sectionId) {
   const selectedSections = document.querySelectorAll(
-    `[data-section="${sectionId}"]`
+    `[data-section="${sectionId}"]`,
   );
-  document
-    .querySelectorAll(`[data-section="${currentActiveTab.dataset.sectionId}"]`)
-    .forEach((oldSection) => {
-      oldSection.classList.toggle("hidden", true);
-    });
+  document.querySelectorAll(`section`).forEach((oldSection) => {
+    oldSection.classList.toggle("hidden", true);
+  });
+
   selectedSections.forEach((section) => {
     section.classList.toggle("hidden", false);
   });
 }
 
-function NavigateToTab(clickedTab) {
+function NavigateToTab(e) {
+  e.preventDefault();
+
+  const link = e.target;
+
+  const section = link.getAttribute("href");
+  console.log(section);
+  let clickedTab = e.currentTarget;
+  // const target = clickedTab.dataset.target;
+  // if (!target) return;
+  // history.pushState(null, null, `#${target}`);
   tabs.forEach((tab) => {
     DeactiveTab(tab);
   });
+
   ActiveTab(clickedTab);
   SetActiveSection(clickedTab.dataset.sectionId);
   SetNavigationTitle(clickedTab);
@@ -50,13 +59,13 @@ function SetNavigationTitle(tab) {
     case "meal-recipes":
       SetHeaderInfo(
         "Meals & Recipes",
-        "Discover delicious and nutritious recipes tailored for you"
+        "Discover delicious and nutritious recipes tailored for you",
       );
       break;
     case "products-section":
       SetHeaderInfo(
         "Product Scanner",
-        "Search packaged foods by name or barcode"
+        "Search packaged foods by name or barcode",
       );
       break;
     case "foodlog-section":
@@ -79,7 +88,7 @@ function CloseSideBarOnMobile() {
 }
 
 function RegisterEvents() {
-  RegisterMultiEvents(tabs, "click", (e) => NavigateToTab(e.currentTarget));
+  RegisterMultiEvents(tabs, "click", (e) => NavigateToTab(e));
   mobileToggle.addEventListener("click", OpenMobileSideBar);
   closeMobileBtn.addEventListener("click", CloseSideBarOnMobile);
   document.addEventListener("click", (e) => {
@@ -87,10 +96,25 @@ function RegisterEvents() {
       CloseSideBarOnMobile();
     }
   });
+  window.addEventListener("popstate", () => {
+    const path = location.pathname;
+
+    const matchedTab = [...tabs].find((tab) => tab.dataset.target === path);
+    if (!matchedTab) return;
+
+    tabs.forEach(DeactiveTab);
+
+    ActiveTab(matchedTab);
+    SetActiveSection(matchedTab.dataset.sectionId);
+    SetNavigationTitle(matchedTab);
+
+    currentActiveTab = matchedTab;
+  });
 }
 
 const sideBarUI = {
   RegisterEvents,
+  NavigateToTab,
 };
 
 export default sideBarUI;

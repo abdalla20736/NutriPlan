@@ -1,67 +1,37 @@
 import mealApi from "../api/mealApi.js";
+import nutritionApi from "../api/nutritionApi.js";
 import { SetHeaderInfo } from "../utils/sharedComponents.js";
 import { MealDetails } from "../models/mealDetails.js";
+import { LoggedItem } from "../models/loggedItem.js";
+import {
+  CalculatePercentage,
+  standardNutriation,
+} from "../utils/sharedComponents.js";
+import foodLog from "./foodlogUI.js";
 
 const searchFiltersSection = document.getElementById("search-filters-section");
 const mealDetailsSection = document.getElementById("meal-details");
 const mealCategoriesSection = document.getElementById(
-  "meal-categories-section"
+  "meal-categories-section",
 );
 const allRecipesSection = document.getElementById("all-recipes-section");
 const backToMealsBtn = document.getElementById("back-to-meals-btn");
-const nutritionContainer = document.getElementById("nutrition-facts-container");
-const loadingNutritionContainer = document.getElementById(
-  "loading-nutrition-container"
-);
 
+let nutritionData;
 let meal;
 
-function SetAnalyzeLoading() {
-  let loadingStyle = `<div class="text-center py-8">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 mb-4">
-                    <i class="animate-pulse text-emerald-600 text-xl" data-fa-i2svg=""><svg class="svg-inline--fa fa-calculator" data-prefix="fas" data-icon="calculator" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-384c0-35.3-28.7-64-64-64L64 0zM96 64l192 0c17.7 0 32 14.3 32 32l0 32c0 17.7-14.3 32-32 32L96 160c-17.7 0-32-14.3-32-32l0-32c0-17.7 14.3-32 32-32zm16 168a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zm80 24a24 24 0 1 1 0-48 24 24 0 1 1 0 48zm128-24a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM88 352a24 24 0 1 1 0-48 24 24 0 1 1 0 48zm128-24a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zm80 24a24 24 0 1 1 0-48 24 24 0 1 1 0 48zM64 424c0-13.3 10.7-24 24-24l112 0c13.3 0 24 10.7 24 24s-10.7 24-24 24L88 448c-13.3 0-24-10.7-24-24zm232-24c13.3 0 24 10.7 24 24s-10.7 24-24 24-24-10.7-24-24 10.7-24 24-24z"></path></svg></i>
-                </div>
-                <p class="text-gray-700 font-medium mb-1">Calculating Nutrition</p>
-                <p class="text-sm text-gray-500">Analyzing ingredients...</p>
-                <div class="mt-4 flex justify-center">
-                    <div class="flex space-x-1">
-                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
-                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
-                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
-                    </div>
-                </div>
-            </div>`;
-  nutritionContainer.classList.add("hidden");
-  loadingNutritionContainer.innerHTML += loadingStyle;
-  console.log(loadingNutritionContainer);
+function SetLinkState(product) {
+  const target = product.dataset.target;
+
+  if (!target) return;
+
+  history.pushState(null, null, `#${target}`);
 }
 
-function SetLogButtonLoading() {
-  const logThisMeal = document.getElementById("log-meal-btn");
-  logThisMeal.classList.add(
-    "bg-gray-300",
-    "text-gray-500",
-    "cursor-not-allowed"
-  );
-
-  logThisMeal.classList.remove("bg-blue-600", "hover:bg-blue-700");
-  logThisMeal.disabled = true;
-  logThisMeal.querySelector("span").textContent = "Calculating...";
-  logThisMeal
-    .querySelector("i")
-    .classList.replace("fa-clipboard-list", "fa-spinner");
-  logThisMeal.querySelector("i").classList.add("fa-spin");
-  logThisMeal.title = "Waiting for nutrition data...";
-}
-function SetLoadingData() {
-  SetLogButtonLoading();
-  SetAnalyzeLoading();
-}
-
-window.GetMealDetails = async function (id) {
+window.GetMealDetails = async function (product, id) {
   SetHeaderInfo(
     "Recipe Details",
-    "View full recipe information and nutrition facts"
+    "View full recipe information and nutrition facts",
   );
   const mealData = await mealApi.GetMealById(id);
 
@@ -69,11 +39,21 @@ window.GetMealDetails = async function (id) {
     meal = new MealDetails(mealData);
   }
 
-  RenderMealDetails(meal);
+  SetLinkState(product);
+
+  RenderMealDetailsWithNutrition(meal);
 
   ToggleMealDetails(false);
-  SetLoadingData();
 };
+
+async function RenderMealDetailsWithNutrition(meal) {
+  let { name, ingredients } = meal;
+  RenderMealDetails(meal);
+  SetLoadingData(true);
+  nutritionData = await nutritionApi.AnalyzeRecipeNutrition(name, ingredients);
+  SetLoadingData(false);
+  RenderNutritionData(nutritionData);
+}
 
 function RenderMealDetails(meal) {
   mealDetailsSection.innerHTML = `
@@ -120,7 +100,7 @@ function RenderMealDetails(meal) {
                   </span>
                   <span class="flex items-center gap-2">
                     <i class="fa-solid fa-fire"></i>
-                    <span id="hero-calories">485 cal/serving</span>
+                    <span id="hero-calories">calculating...</span>
                   </span>
                 </div>
               </div>
@@ -135,7 +115,7 @@ function RenderMealDetails(meal) {
               class="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all"
               data-meal-id="${meal.id}"
             >
-              <i class="fa-solid fa-clipboard-list"></i>
+               <i  class="fa-solid fa-clipboard-list"></i>    
               <span>Log This Meal</span>
             </button>
           </div>
@@ -234,7 +214,7 @@ ${
             <!-- Right Column - Nutrition -->
             <div class="space-y-6">
               <!-- Nutrition Facts -->
-              <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+              <div  id="loading-nutrition-container" class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
                 <h2
                   class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2"
                 >
@@ -242,14 +222,48 @@ ${
                   Nutrition Facts
                 </h2>
                 <div id="nutrition-facts-container">
-                  <p class="text-sm text-gray-500 mb-4">Per serving</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    `;
+}
+
+function RenderNutritionData() {
+  const { protein, carbs, fat, sugar, fiber, saturatedFat } =
+    nutritionData.perServing;
+
+  const proteinPercent = CalculatePercentage(
+    protein,
+    standardNutriation.protein,
+  );
+  const carbsPercent = CalculatePercentage(carbs, standardNutriation.carbs);
+  const fatPercent = CalculatePercentage(fat, standardNutriation.fat);
+  const sugarPercent = CalculatePercentage(sugar, standardNutriation.sugar);
+  const fiberPercent = CalculatePercentage(fiber, standardNutriation.fiber);
+  const saturatedFatPercent = CalculatePercentage(
+    saturatedFat,
+    standardNutriation.saturatedFat,
+  );
+
+  document.getElementById("hero-calories").textContent =
+    `${nutritionData.perServing.calories} cal/serving`;
+
+  const nutritionFactsContainer = document.getElementById(
+    "nutrition-facts-container",
+  );
+
+  nutritionFactsContainer.innerHTML = `
+                    <p class="text-sm text-gray-500 mb-4">Per serving</p>
 
                   <div
                     class="text-center py-4 mb-4 bg-linear-to-br from-emerald-50 to-teal-50 rounded-xl"
                   >
                     <p class="text-sm text-gray-600">Calories per serving</p>
-                    <p class="text-4xl font-bold text-emerald-600">485</p>
-                    <p class="text-xs text-gray-500 mt-1">Total: 1940 cal</p>
+                    <p class="text-4xl font-bold text-emerald-600">${nutritionData.perServing.calories}</p>
+                    <p class="text-xs text-gray-500 mt-1">Total: ${nutritionData.totals.calories} cal</p>
                   </div>
 
                   <div class="space-y-4">
@@ -258,12 +272,12 @@ ${
                         <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
                         <span class="text-gray-700">Protein</span>
                       </div>
-                      <span class="font-bold text-gray-900">42g</span>
+                      <span class="font-bold text-gray-900">${nutritionData.perServing.protein}g</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
                         class="bg-emerald-500 h-2 rounded-full"
-                        style="width: 84%"
+                        style="width: ${proteinPercent}%"
                       ></div>
                     </div>
 
@@ -272,12 +286,12 @@ ${
                         <div class="w-3 h-3 rounded-full bg-blue-500"></div>
                         <span class="text-gray-700">Carbs</span>
                       </div>
-                      <span class="font-bold text-gray-900">52g</span>
+                      <span class="font-bold text-gray-900">${nutritionData.perServing.carbs}g</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
                         class="bg-blue-500 h-2 rounded-full"
-                        style="width: 17%"
+                        style="width: ${carbsPercent}%"
                       ></div>
                     </div>
 
@@ -286,12 +300,12 @@ ${
                         <div class="w-3 h-3 rounded-full bg-purple-500"></div>
                         <span class="text-gray-700">Fat</span>
                       </div>
-                      <span class="font-bold text-gray-900">8g</span>
+                      <span class="font-bold text-gray-900">${nutritionData.perServing.fat}g</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
                         class="bg-purple-500 h-2 rounded-full"
-                        style="width: 12%"
+                        style="width: ${fatPercent}%"
                       ></div>
                     </div>
 
@@ -300,12 +314,12 @@ ${
                         <div class="w-3 h-3 rounded-full bg-orange-500"></div>
                         <span class="text-gray-700">Fiber</span>
                       </div>
-                      <span class="font-bold text-gray-900">4g</span>
+                      <span class="font-bold text-gray-900">${nutritionData.perServing.fiber}g</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
                         class="bg-orange-500 h-2 rounded-full"
-                        style="width: 14%"
+                        style="width: ${fiberPercent}%"
                       ></div>
                     </div>
 
@@ -314,45 +328,44 @@ ${
                         <div class="w-3 h-3 rounded-full bg-pink-500"></div>
                         <span class="text-gray-700">Sugar</span>
                       </div>
-                      <span class="font-bold text-gray-900">12g</span>
+                      <span class="font-bold text-gray-900">${nutritionData.perServing.sugar}g</span>
                     </div>
                     <div class="w-full bg-gray-100 rounded-full h-2">
                       <div
                         class="bg-pink-500 h-2 rounded-full"
-                        style="width: 24%"
+                        style="width: ${sugarPercent}%"
+                      ></div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span class="text-gray-700">Saturated Fat</span>
+                      </div>
+                      <span class="font-bold text-gray-900">${nutritionData.perServing.saturatedFat}g</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2">
+                      <div
+                        class="bg-red-500 h-2 rounded-full"
+                        style="width: ${saturatedFatPercent}%"
                       ></div>
                     </div>
                   </div>
-
-                  <div class="mt-6 pt-6 border-t border-gray-100">
-                    <h3 class="text-sm font-semibold text-gray-900 mb-3">
-                      Vitamins & Minerals (% Daily Value)
-                    </h3>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Vitamin A</span>
-                        <span class="font-medium">15%</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Vitamin C</span>
-                        <span class="font-medium">25%</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Calcium</span>
-                        <span class="font-medium">4%</span>
-                      </div>
-                      <div class="flex justify-between">
-                        <span class="text-gray-600">Iron</span>
-                        <span class="font-medium">12%</span>
-                      </div>
-                    </div>
                   </div>
+                  <div class="mt-6 pt-6 border-t border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-900 mb-3">Other</h3>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Cholesterol</span>
+                        <span class="font-medium">${nutritionData.perServing.cholesterol}mg</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Sodium</span>
+                        <span class="font-medium">${nutritionData.perServing.sodium}mg</span>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
-        </div>
-    `;
+                  </div>
+  `;
 }
 
 function ToggleMealDetails(isOpen) {
@@ -391,19 +404,19 @@ window.LogMeal = function () {
                     <p class="text-sm text-gray-600 mb-2">Estimated nutrition per serving:</p>
                     <div class="grid grid-cols-4 gap-2 text-center">
                         <div>
-                            <p class="text-lg font-bold text-emerald-600" id="modal-calories">1564</p>
+                            <p class="text-lg font-bold text-emerald-600" id="modal-calories">${nutritionData.perServing.calories}</p>
                             <p class="text-xs text-gray-500">Calories</p>
                         </div>
                         <div>
-                            <p class="text-lg font-bold text-blue-600" id="modal-protein">95g</p>
+                            <p class="text-lg font-bold text-blue-600" id="modal-protein">${nutritionData.perServing.protein}g</p>
                             <p class="text-xs text-gray-500">Protein</p>
                         </div>
                         <div>
-                            <p class="text-lg font-bold text-amber-600" id="modal-carbs">107g</p>
+                            <p class="text-lg font-bold text-amber-600" id="modal-carbs">${nutritionData.perServing.carbs}g</p>
                             <p class="text-xs text-gray-500">Carbs</p>
                         </div>
                         <div>
-                            <p class="text-lg font-bold text-purple-600" id="modal-fat">149g</p>
+                            <p class="text-lg font-bold text-purple-600" id="modal-fat">${nutritionData.perServing.fat}g</p>
                             <p class="text-xs text-gray-500">Fat</p>
                         </div>
                     </div>
@@ -414,8 +427,9 @@ window.LogMeal = function () {
                     <button id="cancel-log-meal" onclick="CloseLogModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all">
                         Cancel
                     </button>
-                    <button id="confirm-log-meal" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all">
-                        <i class="mr-2" data-fa-i2svg=""><svg class="svg-inline--fa fa-clipboard-list" data-prefix="fas" data-icon="clipboard-list" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M311.4 32l8.6 0c35.3 0 64 28.7 64 64l0 352c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 96C0 60.7 28.7 32 64 32l8.6 0C83.6 12.9 104.3 0 128 0L256 0c23.7 0 44.4 12.9 55.4 32zM248 112c13.3 0 24-10.7 24-24s-10.7-24-24-24L136 64c-13.3 0-24 10.7-24 24s10.7 24 24 24l112 0zM128 256a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm32 0c0 13.3 10.7 24 24 24l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-112 0c-13.3 0-24 10.7-24 24zm0 128c0 13.3 10.7 24 24 24l112 0c13.3 0 24-10.7 24-24s-10.7-24-24-24l-112 0c-13.3 0-24 10.7-24 24zM96 416a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"></path></svg></i>
+                    <button id="confirm-log-meal" onclick="OnLogRecipe()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all">
+                      <i class="fa-solid fa-clipboard-list"></i>    
+  
                         Log Meal
                     </button>
                 </div>
@@ -423,6 +437,45 @@ window.LogMeal = function () {
         </div>`;
   document.body.insertAdjacentHTML("beforeend", LogMenuContent);
 };
+
+window.OnLogRecipe = function () {
+  const modal = document.getElementById("log-meal-modal");
+  meal.type = "Recipe";
+  meal.serving = document.getElementById("meal-servings").value;
+  console.log(nutritionData.perServing.calories);
+  console.log(meal.serving);
+
+  const loggedRecipe = new LoggedItem(meal);
+
+  loggedRecipe.nutrition.calories =
+    nutritionData.perServing.calories * meal.serving;
+  loggedRecipe.nutrition.protein =
+    nutritionData.perServing.protein * meal.serving;
+  loggedRecipe.nutrition.carbs = nutritionData.perServing.carbs * meal.serving;
+  loggedRecipe.nutrition.fat = nutritionData.perServing.fat * meal.serving;
+
+  const storedItems = foodLog.GetLoggedItem();
+  storedItems.push(loggedRecipe);
+  foodLog.SetLoggedItem(storedItems);
+
+  CloseLogModal();
+
+  Swal.fire({
+    title: "Meal Logged!",
+    html: `<p class="text-gray-600">${loggedRecipe.name} (${loggedRecipe.serving} serving) has been added to your daily log.</p>  <p class="text-emerald-600 font-semibold mt-2">+${loggedRecipe.nutrition.calories} calories</p>`,
+    icon: "success",
+    showConfirmButton: false,
+    timer: 2000,
+  });
+
+  foodLog.UpdateWeeklyDataOnAddingItem(loggedRecipe);
+};
+
+document.addEventListener("click", (e) => {
+  if (e.target === document.getElementById("log-meal-modal")) {
+    document.getElementById("log-meal-modal").remove();
+  }
+});
 
 window.CloseLogModal = function () {
   document.getElementById("log-meal-modal").remove();
@@ -449,9 +502,68 @@ window.DecrementModal = function () {
   }
 };
 
+function SetAnalyzeLoading(isLoading) {
+  const nutritionContainer = document.getElementById(
+    "nutrition-facts-container",
+  );
+  const loadingNutritionContainer = document.getElementById(
+    "loading-nutrition-container",
+  );
+  let loadingStyle = `<div id="loading-analyze-data" class=" text-center py-8">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 mb-4">
+                    <i class="animate-pulse text-emerald-600 text-xl" data-fa-i2svg=""><svg class="svg-inline--fa fa-calculator" data-prefix="fas" data-icon="calculator" role="img" viewBox="0 0 384 512" aria-hidden="true" data-fa-i2svg=""><path fill="currentColor" d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-384c0-35.3-28.7-64-64-64L64 0zM96 64l192 0c17.7 0 32 14.3 32 32l0 32c0 17.7-14.3 32-32 32L96 160c-17.7 0-32-14.3-32-32l0-32c0-17.7 14.3-32 32-32zm16 168a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zm80 24a24 24 0 1 1 0-48 24 24 0 1 1 0 48zm128-24a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zM88 352a24 24 0 1 1 0-48 24 24 0 1 1 0 48zm128-24a24 24 0 1 1 -48 0 24 24 0 1 1 48 0zm80 24a24 24 0 1 1 0-48 24 24 0 1 1 0 48zM64 424c0-13.3 10.7-24 24-24l112 0c13.3 0 24 10.7 24 24s-10.7 24-24 24L88 448c-13.3 0-24-10.7-24-24zm232-24c13.3 0 24 10.7 24 24s-10.7 24-24 24-24-10.7-24-24 10.7-24 24-24z"></path></svg></i>
+                </div>
+                <p class="text-gray-700 font-medium mb-1">Calculating Nutrition</p>
+                <p class="text-sm text-gray-500">Analyzing ingredients...</p>
+                <div class="mt-4 flex justify-center">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                    </div>
+                </div>
+            </div>`;
+  isLoading
+    ? nutritionContainer.classList.add("hidden")
+    : nutritionContainer.classList.remove("hidden");
+  isLoading
+    ? (loadingNutritionContainer.innerHTML += loadingStyle)
+    : document.getElementById("loading-analyze-data").remove();
+}
+
+function SetLogButtonLoading(isLoading) {
+  const logThisMeal = document.getElementById("log-meal-btn");
+  logThisMeal.classList.toggle("bg-gray-300", isLoading);
+  logThisMeal.classList.toggle("text-gray-500", isLoading);
+  logThisMeal.classList.toggle("cursor-not-allowed", isLoading);
+  logThisMeal.classList.toggle("bg-blue-600", !isLoading);
+  logThisMeal.classList.toggle("hover:bg-blue-700", !isLoading);
+  logThisMeal.disabled = isLoading;
+  const text = logThisMeal.querySelector("span");
+  isLoading
+    ? (text.textContent = "Calculating...")
+    : (text.textContent = "Log This Meal");
+  const icon = logThisMeal.querySelector("i");
+  const svg = icon.querySelector("svg");
+  console.log(icon);
+  isLoading
+    ? icon.classList.replace("fa-clipboard-list", "fa-spinner")
+    : svg.classList.replace("fa-spinner", "fa-clipboard-list");
+  isLoading ? icon.classList.add("fa-spin") : svg.classList.remove("fa-spin");
+
+  isLoading
+    ? (logThisMeal.title = "Waiting for nutrition data...")
+    : (logThisMeal.title = "");
+}
+function SetLoadingData(isLoading) {
+  SetLogButtonLoading(isLoading);
+  SetAnalyzeLoading(isLoading);
+}
+
 function RegisterEvents() {
   backToMealsBtn.addEventListener("click", () => ToggleMealDetails(true));
 }
+
 const mealDetailsUI = { RegisterEvents };
 
 export default mealDetailsUI;

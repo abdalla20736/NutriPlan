@@ -3,7 +3,7 @@ import { MealCategory } from "../models/mealCategory.js";
 import { Recipe } from "../models/recipe.js";
 import { RegisterMultiEvents } from "../utils/utils.js";
 
-import mealDetailsUI from "./mealdetailsUI.js";
+import mealDetailsUI from "./mealDetailsUI.js";
 
 const areasFilter = document.getElementById("areas-filter");
 const categoriesGrid = document.getElementById("categories-grid");
@@ -14,12 +14,9 @@ const gridViewBtn = document.getElementById("grid-view-btn");
 const listViewBtn = document.getElementById("list-view-btn");
 const searchInput = document.getElementById("search-input");
 
-
 let categoriesButtons;
 let areaButtons;
 let recipes = [];
-
-StartUp();
 
 async function StartUp() {
   await LoadAreas();
@@ -115,7 +112,7 @@ async function LoadRecipeByFilter(filter, data) {
       SetAreaButtonStyle(data);
       recipesData =
         data === "all"
-          ? await mealApi.GetMealsByCategory("chicken")
+          ? await mealApi.GetMealsByTerm("chicken")
           : await mealApi.GetMealsByArea(data);
       break;
   }
@@ -125,7 +122,7 @@ async function LoadRecipeByFilter(filter, data) {
 
     recipes.push(newRecipe);
   });
-
+  recipes = filter === "area" && data != "all" ? recipes.slice(0, 20) : recipes;
   RenderMealsUI(recipes, filter, data);
 }
 
@@ -153,8 +150,9 @@ function RenderRecipes(recipes) {
   if (recipes.length > 0) {
     recipes.forEach((recipe) => {
       recipesContent += `            <div
-              onclick="GetMealDetails('${recipe.id}')"
+              onclick="GetMealDetails(this,'${recipe.id}')"
               class="recipe-card bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group"
+              data-target="meal/${recipe.name.replace(" ", "-").toLowerCase()}"
               data-area="${recipe.area.toLowerCase()}"
               data-meal-id="${recipe.id}"
             >
@@ -227,41 +225,43 @@ async function SearchRecipesByName(value) {
   RenderMealsUI(recipesData, "", "", `"${value}"`);
 }
 
-function SetRecipesView(clickedViewButton) {
-  clickedViewButton.classList.add("bg-white", "rounded-md", "shadow-sm");
-  clickedViewButton.querySelector("i").classList.add("text-gray-700");
-  switch (clickedViewButton.id) {
-    case "grid-view-btn":
-      listViewBtn.classList.remove("bg-white", "rounded-md", "shadow-sm");
-      listViewBtn.querySelector("i").classList.remove("text-gray-500");
-      recipesGrid.classList.replace("grid-cols-2", "grid-cols-4");
-      recipesGrid.classList.replace("gap-4", "gap-5");
-      console.log(recipesGrid.querySelectorAll(".recipe-card"));
-      recipesGrid.querySelectorAll(".recipe-card").forEach((card) => {
-        card.classList.remove("flex", "flex-row", "h-40");
-        card.querySelector("img").nextElementSibling.classList.remove("hidden");
-      });
+function SetRecipesView(isListView) {
+  const recipeCards = document.querySelectorAll(".recipe-card");
 
-      recipesGrid.querySelector("img").parentElement.classList.remove("h-full");
-      break;
-    case "list-view-btn":
-      gridViewBtn.classList.remove("bg-white", "rounded-md", "shadow-sm");
-      listViewBtn.querySelector("i").classList.remove("text-gray-500");
-      recipesGrid.classList.replace("grid-cols-4", "grid-cols-2");
-      recipesGrid.classList.replace("gap-5", "gap-4");
-      recipesGrid.querySelectorAll(".recipe-card").forEach((card) => {
-        card.classList.add("flex", "flex-row", "h-40");
-        card.querySelector("img").nextElementSibling.classList.add("hidden");
-      });
+  listViewBtn.classList.toggle("bg-white", isListView);
+  listViewBtn.classList.toggle("shadow-sm", isListView);
 
-      recipesGrid.querySelector("img").parentElement.classList.add("h-full");
-      break;
-  }
+  gridViewBtn.classList.toggle("bg-white", !isListView);
+  gridViewBtn.classList.toggle("shadow-sm", !isListView);
+
+  recipesGrid.classList.toggle("grid-cols-2", isListView);
+  recipesGrid.classList.toggle("gap-4", isListView);
+
+  recipesGrid.classList.toggle("grid-cols-4", !isListView);
+  recipesGrid.classList.toggle("gap-5", !isListView);
+
+  recipeCards.forEach((card) => {
+    const imageWrapper = card.querySelector(".relative");
+    const badge = card.querySelector(".relative .absolute.bottom-3");
+    const img = card.querySelector("img");
+
+    card.classList.toggle("flex", isListView);
+    card.classList.toggle("flex-row", isListView);
+    card.classList.toggle("h-40", isListView);
+
+    imageWrapper.classList.toggle("h-48", !isListView);
+    imageWrapper.classList.toggle("h-full", isListView);
+    imageWrapper.classList.toggle("w-48", isListView);
+    imageWrapper.classList.toggle("flex-shrink-0", isListView);
+
+    badge?.classList.toggle("hidden", isListView);
+    img?.classList.toggle("h-full", !isListView);
+  });
 }
 
 function RegisterEvents() {
-  listViewBtn.addEventListener("click", (e) => SetRecipesView(e.currentTarget));
-  gridViewBtn.addEventListener("click", (e) => SetRecipesView(e.currentTarget));
+  listViewBtn.addEventListener("click", (e) => SetRecipesView(true));
+  gridViewBtn.addEventListener("click", (e) => SetRecipesView(false));
   searchInput.addEventListener("input", (e) => {
     if (e.target.value.length > 1) {
       SearchRecipesByName(e.target.value);
@@ -275,14 +275,15 @@ function RegisterEvents() {
   });
 
   RegisterMultiEvents(categoriesButtons, "click", (e) =>
-    LoadRecipeByFilter("category", e.currentTarget.dataset.category)
+    LoadRecipeByFilter("category", e.currentTarget.dataset.category),
   );
   RegisterMultiEvents(areaButtons, "click", (e) =>
-    LoadRecipeByFilter("area", e.currentTarget.dataset.area)
+    LoadRecipeByFilter("area", e.currentTarget.dataset.area),
   );
 }
 
 const meals = {
+  StartUp,
   LoadRecipeByFilter,
 };
 export default meals;
