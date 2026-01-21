@@ -26,6 +26,8 @@ function StartUp() {
 
 function RegisterEvents() {
   window.addEventListener("load", () => {
-    ToggleAppLoading(false);
+    setTimeout(() => {
+      ToggleAppLoading(false);
+    }, 2000);
   });
 }
