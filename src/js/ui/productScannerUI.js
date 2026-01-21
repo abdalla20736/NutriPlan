@@ -2,7 +2,7 @@ import productApi from "../api/productApi.js";
 import { LoggedItem } from "../models/loggedItem.js";
 import { ProductCategory } from "../models/productCategory.js";
 import staticData from "../utils/staticData.js";
-import foodLog from "./foodlogUI.js";
+import foodLog from "./foodLogUI.js";
 import { RegisterMultiEvents } from "../utils/utils.js";
 import {
   standardNutriation,

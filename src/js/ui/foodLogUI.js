@@ -383,6 +383,7 @@ function RegisterEvents() {
     RenderFoodLog(loggedItems);
   });
 }
+
 const foodLog = {
   StartUp,
   SetLoggedItem,

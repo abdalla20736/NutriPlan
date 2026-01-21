@@ -7,7 +7,7 @@ import {
   CalculatePercentage,
   standardNutriation,
 } from "../utils/sharedComponents.js";
-import foodLog from "./foodlogUI.js";
+import foodLog from "./foodLogUI.js";
 
 const searchFiltersSection = document.getElementById("search-filters-section");
 const mealDetailsSection = document.getElementById("meal-details");
