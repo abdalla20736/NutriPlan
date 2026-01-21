@@ -21,14 +21,14 @@ const backToMealsBtn = document.getElementById("back-to-meals-btn");
 let nutritionData;
 let meal;
 
-window.GetMealDetails = async function (meal, id) {
+window.GetMealDetails = async function (mealInstance, id) {
   SetHeaderInfo(
     "Recipe Details",
     "View full recipe information and nutrition facts",
   );
   const mealData = await mealApi.GetMealById(id);
 
-  SetLinkState(meal);
+  SetLinkState(mealInstance);
 
   if (mealData != null) {
     meal = new MealDetails(mealData);
