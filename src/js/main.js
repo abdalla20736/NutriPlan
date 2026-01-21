@@ -7,8 +7,8 @@
 
 import sideBarUI from "./ui/sidebarUI.js";
 import meals from "./ui/mealsUI.js";
-import products from "./ui/productscannerUI.js";
-import foodLog from "./ui/foodlogUI.js";
+import products from "./ui/productScannerUI.js";
+import foodLog from "./ui/foodLogUI.js";
 import { ToggleAppLoading } from "./ui/components.js";
 
 const navLinks = document.querySelectorAll("a");
