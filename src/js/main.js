@@ -25,11 +25,6 @@ function StartUp() {
 }
 
 function RegisterEvents() {
-  document.addEventListener("DOMContentLoaded", () => {
-    if (window.location.pathname === "/products") {
-      history.replaceState(null, "", "/");
-    }
-  });
   window.addEventListener("load", () => {
     ToggleAppLoading(false);
   });

@@ -34,16 +34,10 @@ function SetActiveSection(sectionId) {
 }
 
 function NavigateToTab(e) {
-  e.preventDefault();
-
-  const link = e.target;
-
-  const section = link.getAttribute("href");
-  console.log(section);
   let clickedTab = e.currentTarget;
-  // const target = clickedTab.dataset.target;
-  // if (!target) return;
-  // history.pushState(null, null, `#${target}`);
+  const target = clickedTab.dataset.target;
+  if (!target) return;
+  history.pushState(null, null, `#${target}`);
   tabs.forEach((tab) => {
     DeactiveTab(tab);
   });
